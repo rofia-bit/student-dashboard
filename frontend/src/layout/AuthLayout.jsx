@@ -1,9 +1,9 @@
-import React from 'react'
-
-const AuthLayout = () => {
+export function AuthLayout({ children }) {
   return (
-    <div>AuthLayout</div>
-  )
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
+      <div className="w-full max-w-md">
+        {children}
+      </div>
+    </div>
+  );
 }
-
-export default AuthLayout
