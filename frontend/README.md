@@ -11,7 +11,7 @@ this app helps students **organize tasks, track courses, monitor grades, and vis
 
 
 ## check it out : 
-1. **Clone the repo**
+
 ```bash
 git clone https://github.com/yourusername/student-dashboard
 cd frontend
