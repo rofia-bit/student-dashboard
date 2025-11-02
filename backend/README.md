@@ -36,18 +36,3 @@ Point the frontend to the mock backend
 
 Set the frontend environment variable `VITE_API_BASE_URL` to `http://localhost:4000` when running the frontend dev server.
 
-Windows (cmd.exe):
-```cmd
-set VITE_API_BASE_URL=http://localhost:4000 && npm run dev
-```
-
-Or add a `.env` file in the `frontend/` folder containing:
-
-```
-VITE_API_BASE_URL=http://localhost:4000
-```
-
-Notes
-
-- The mock stores data in memory and will reset on server restart.
-- This server is intentionally simple and should not be used in production.
