@@ -15,6 +15,7 @@ const DEFAULT_MENU = [
 
 export function Sidebar({ isOpen, onToggle }) {
   const [menuItems, setMenuItems] = useState(DEFAULT_MENU);
+  const [siteTitle, setSiteTitle] = useState("Nerd Out");
 
   useEffect(() => {
     let mounted = true;
@@ -22,7 +23,8 @@ export function Sidebar({ isOpen, onToggle }) {
       .getAll()
       .then((cfg) => {
         if (!mounted || !cfg) return;
-        if (Array.isArray(cfg.menuItems) && cfg.menuItems.length) {
+  if (cfg.siteTitle) setSiteTitle(cfg.siteTitle);
+  if (Array.isArray(cfg.menuItems) && cfg.menuItems.length) {
           // Expect menuItems with { title, url }
           const mapped = cfg.menuItems.map((m) => {
             const found = DEFAULT_MENU.find((d) => d.url === m.url) || {};
@@ -57,7 +59,7 @@ export function Sidebar({ isOpen, onToggle }) {
             <GraduationCap className="h-6 w-6 text-primary" />
           </div>
           {isOpen && (
-            <span className="font-bold text-lg text-foreground">Nerd Out</span>
+            <span className="font-bold text-lg text-foreground">{siteTitle}</span>
           )}
         </div>
       </div>

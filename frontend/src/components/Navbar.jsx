@@ -1,6 +1,11 @@
 import { Menu, Bell, User } from "lucide-react";
+import useApi from "../hooks/useApi";
+import { api } from "../services/api";
 
 export function Navbar({ onToggleSidebar }) {
+  const { data: cfg } = useApi(() => api.config.getAll(), []);
+  const siteTitle = cfg?.siteTitle || "University Student Planner";
+
   return (
     <header className="h-16 border-b border-border flex items-center justify-between px-4 sm:px-6 bg-card sticky top-0 z-30">
       <div className="flex items-center gap-4">
@@ -11,7 +16,7 @@ export function Navbar({ onToggleSidebar }) {
         >
           <Menu className="h-5 w-5 text-foreground" />
         </button>
-        <h1 className="text-lg sm:text-xl font-semibold text-foreground hidden xs:block">University Student Planner</h1>
+        <h1 className="text-lg sm:text-xl font-semibold text-foreground hidden xs:block">{siteTitle}</h1>
       </div>
       
       <div className="flex items-center gap-2">

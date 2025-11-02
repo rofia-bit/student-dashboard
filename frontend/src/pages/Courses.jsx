@@ -23,6 +23,7 @@ export default function Courses() {
 
   // load course color overrides from config
   const [courseColors, setCourseColors] = useState({});
+  const [semester, setSemester] = useState("Fall 2025 Semester");
   useEffect(() => {
     let mounted = true;
     api.config
@@ -31,6 +32,9 @@ export default function Courses() {
         if (!mounted || !cfg) return;
         if (cfg.courseColors && typeof cfg.courseColors === 'object') {
           setCourseColors(cfg.courseColors);
+        }
+        if (cfg.currentSemester) {
+          setSemester(cfg.currentSemester);
         }
       })
       .catch(() => {});
@@ -44,7 +48,7 @@ export default function Courses() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold text-foreground">My Courses</h2>
-          <p className="text-muted-foreground mt-1">Fall 2025 Semester</p>
+          <p className="text-muted-foreground mt-1">{semester}</p>
         </div>
         <div className="flex items-center gap-2 bg-secondary text-foreground px-4 py-2 rounded-lg">
           <GraduationCap className="h-4 w-4" />
