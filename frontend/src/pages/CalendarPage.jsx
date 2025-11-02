@@ -1,18 +1,50 @@
 import { Calendar, CheckCircle2, Clock, BookOpen } from "lucide-react";
+import { useEffect, useState } from "react";
+import { api } from "../services/api";
 
 export default function CalendarPage() {
-  const upcomingEvents = [
-    { id: 1, date: "Today", title: "Math Assignment 3 Due", course: "Calculus II", type: "assignment", time: "11:59 PM" },
-    { id: 2, date: "Tomorrow", title: "Physics Midterm Exam", course: "Physics I", type: "exam", time: "2:00 PM" },
-    { id: 3, date: "Friday", title: "English Essay Draft", course: "English Literature", type: "assignment", time: "11:59 PM" },
-    { id: 4, date: "Next Monday", title: "CS Project Presentation", course: "Computer Science", type: "presentation", time: "10:00 AM" },
-  ];
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [stats, setStats] = useState([
+    { label: "Events this week", value: "-", icon: Calendar },
+    { label: "Exams coming up", value: "-", icon: Clock },
+    { label: "Tasks completed", value: "-", icon: CheckCircle2 },
+  ]);
 
-  const stats = [
-    { label: "Events this week", value: "8", icon: Calendar },
-    { label: "Exams coming up", value: "2", icon: Clock },
-    { label: "Tasks completed", value: "12", icon: CheckCircle2 },
-  ];
+  useEffect(() => {
+    let mounted = true;
+    api.tasks
+      .getAll()
+      .then((tasks) => {
+        if (!mounted) return;
+        if (Array.isArray(tasks)) {
+          // Map tasks to simple events (take first 6 upcoming)
+          const events = tasks.slice(0, 6).map((t) => ({
+            id: t.id,
+            date: t.dueDate || "TBD",
+            title: t.title,
+            course: t.course || "",
+            type: t.type || "assignment",
+            time: t.time || "",
+          }));
+          setUpcomingEvents(events);
+        }
+      })
+      .catch(() => {});
+
+    api.stats
+      .get()
+      .then((s) => {
+        if (!mounted || !s) return;
+        setStats([
+          { label: "Events this week", value: s.eventsThisWeek ?? "-", icon: Calendar },
+          { label: "Exams coming up", value: s.examsComingUp ?? "-", icon: Clock },
+          { label: "Tasks completed", value: s.tasksCompleted ?? "-", icon: CheckCircle2 },
+        ]);
+      })
+      .catch(() => {});
+
+    return () => (mounted = false);
+  }, []);
 
   return (
     <div className="space-y-6">

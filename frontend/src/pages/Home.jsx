@@ -1,35 +1,67 @@
 /* eslint-disable no-unused-vars */
 import { CheckCircle2, Clock, BookOpen, Plus, Star, Trophy, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { MOTIVATIONAL_MESSAGES } from "../utils/constants";
+import { useEffect, useState } from "react";
+import { api } from "../services/api";
+import DEFAULTS from "../utils/constants";
 
 export default function Home() {
   const navigate = useNavigate();
 
-  const userLevel = 8;
-  const currentXP = 650;
-  const xpToNextLevel = 1000;
+  const [statsData, setStatsData] = useState(null);
+  const [upcomingTasks, setUpcomingTasks] = useState([]);
+  const [messages, setMessages] = useState(DEFAULTS.MOTIVATIONAL_MESSAGES || []);
+
+  useEffect(() => {
+    let mounted = true;
+    api.stats
+      .get()
+      .then((res) => {
+        if (!mounted) return;
+        setStatsData(res || null);
+      })
+      .catch(() => {
+        // ignore, keep defaults
+      });
+
+    api.tasks
+      .getAll()
+      .then((tasks) => {
+        if (!mounted) return;
+        // take next 3 tasks as upcoming (backend should sort)
+        if (Array.isArray(tasks)) setUpcomingTasks(tasks.slice(0, 3));
+      })
+      .catch(() => {});
+
+    api.config
+      .getAll()
+      .then((cfg) => {
+        if (!mounted) return;
+        if (cfg?.motivationalMessages) setMessages(cfg.motivationalMessages);
+      })
+      .catch(() => {});
+
+    return () => (mounted = false);
+  }, []);
+
+  const userLevel = statsData?.userLevel ?? 8;
+  const currentXP = statsData?.currentXP ?? 650;
+  const xpToNextLevel = statsData?.xpToNextLevel ?? 1000;
   const xpProgress = (currentXP / xpToNextLevel) * 100;
-  const studyStreak = 5;
-  const totalPoints = 2450;
+  const studyStreak = statsData?.studyStreak ?? 5;
+  const totalPoints = statsData?.totalPoints ?? 2450;
 
   const stats = [
-    { title: "Tasks Due Today", value: "3", icon: Clock, color: "text-orange-500", bgColor: "bg-orange-500/10", points: "+10 XP each" },
-    { title: "Completed This Week", value: "12", icon: CheckCircle2, color: "text-green-500", bgColor: "bg-green-500/10", points: "+120 XP" },
-    { title: "Active Courses", value: "5", icon: BookOpen, color: "text-blue-500", bgColor: "bg-blue-500/10", points: "Keep going!" },
+    { title: "Tasks Due Today", value: statsData?.tasksDueToday ?? "3", icon: Clock, color: "text-orange-500", bgColor: "bg-orange-500/10", points: "+10 XP each" },
+    { title: "Completed This Week", value: statsData?.completedThisWeek ?? "12", icon: CheckCircle2, color: "text-green-500", bgColor: "bg-green-500/10", points: "+120 XP" },
+    { title: "Active Courses", value: statsData?.activeCourses ?? "5", icon: BookOpen, color: "text-blue-500", bgColor: "bg-blue-500/10", points: "Keep going!" },
     { title: "Study Streak", value: `${studyStreak} days`, icon: Zap, color: "text-yellow-500", bgColor: "bg-yellow-500/10", points: "+50 XP bonus" },
   ];
 
-  const achievements = [
+  const achievements = statsData?.achievements ?? [
     { id: 1, title: "First Steps", description: "Complete your first task", earned: true, icon: Star },
     { id: 2, title: "Week Warrior", description: "Study for 7 days straight", earned: true, icon: Trophy },
     { id: 3, title: "Task Master", description: "Complete 50 tasks", earned: false, icon: CheckCircle2 },
-  ]; //non used yet just an idea
-
-  const upcomingTasks = [
-    { id: 1, title: "Math Assignment 3", course: "Calculus II", dueDate: "Today, 11:59 PM", priority: "high", xp: 30 },
-    { id: 2, title: "Physics Lab Report", course: "Physics I", dueDate: "Tomorrow, 5:00 PM", priority: "medium", xp: 20 },
-    { id: 3, title: "Essay Draft", course: "English Literature", dueDate: "Friday, 11:59 PM", priority: "low", xp: 15 },
   ];
 
   return (

@@ -1,68 +1,84 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { api } from "../services/api";
 
 const TaskContext = createContext(undefined);
 
 export function TaskProvider({ children }) {
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      title: "Complete Math Assignment",
-      description: "Solve problems 1-15 from Chapter 4",
-      course: "Calculus II",
-      dueDate: "2024-11-15",
-      priority: "high",
-      completed: false,
-    },
-    {
-      id: 2,
-      title: "Physics Lab Report",
-      description: "Write lab report for electricity experiment",
-      course: "Physics I",
-      dueDate: "2024-11-18",
-      priority: "medium",
-      completed: false,
-    },
-    {
-      id: 3,
-      title: "Read Chapter 5",
-      description: "Read and take notes on Chapter 5",
-      course: "English Literature",
-      dueDate: "2024-11-20",
-      priority: "low",
-      completed: true,
-    },
-  ]);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const addTask = (task) => {
-    const newTask = {
-      id: Date.now(),
-      ...task,
-      completed: false,
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    api.tasks
+      .getAll()
+      .then((res) => {
+        if (!mounted) return;
+        setTasks(Array.isArray(res) ? res : []);
+      })
+      .catch((err) => {
+        console.error("Failed to load tasks", err);
+        if (mounted) setError(err);
+      })
+      .finally(() => mounted && setLoading(false));
+    return () => {
+      mounted = false;
     };
-    setTasks([...tasks, newTask]);
+  }, []);
+
+  const addTask = async (task) => {
+    try {
+      const created = await api.tasks.create(task);
+      // If API returns created task, use it, otherwise append optimistic
+      setTasks((prev) => [...prev, created || { id: Date.now(), ...task }]);
+    } catch (err) {
+      console.error("Create task failed", err);
+      // optimistic local fallback
+      setTasks((prev) => [...prev, { id: Date.now(), ...task }]);
+    }
   };
 
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  const deleteTask = async (id) => {
+    try {
+      await api.tasks.delete(id);
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+    } catch (err) {
+      console.error("Delete task failed", err);
+      // fallback local removal
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+    }
   };
 
-  const toggleComplete = (id) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+  const toggleComplete = async (id) => {
+    const target = tasks.find((t) => t.id === id);
+    if (!target) return;
+    const updated = { ...target, completed: !target.completed };
+    try {
+      await api.tasks.update(id, updated);
+      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+    } catch (err) {
+      console.error("Toggle task failed", err);
+      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+    }
   };
 
-  const updateTask = (id, updates) => {
-    setTasks(
-      tasks.map((task) => (task.id === id ? { ...task, ...updates } : task))
-    );
+  const updateTask = async (id, updates) => {
+    const target = tasks.find((t) => t.id === id);
+    if (!target) return;
+    const merged = { ...target, ...updates };
+    try {
+      await api.tasks.update(id, merged);
+      setTasks((prev) => prev.map((t) => (t.id === id ? merged : t)));
+    } catch (err) {
+      console.error("Update task failed", err);
+      setTasks((prev) => prev.map((t) => (t.id === id ? merged : t)));
+    }
   };
 
   return (
     <TaskContext.Provider
-      value={{ tasks, addTask, deleteTask, toggleComplete, updateTask }}
+      value={{ tasks, addTask, deleteTask, toggleComplete, updateTask, loading, error }}
     >
       {children}
     </TaskContext.Provider>

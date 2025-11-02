@@ -1,7 +1,9 @@
 import { TrendingUp, TrendingDown, Award, Target } from "lucide-react";
+import { useEffect, useState } from "react";
+import { api } from "../services/api";
 
 export default function Progress() {
-  const progressData = [
+  const [progressData, setProgressData] = useState([
     {
       course: "Advanced Data Bases",
       currentGrade: 88,
@@ -9,31 +11,22 @@ export default function Progress() {
       trend: "up",
       assignments: { completed: 10, total: 12 },
     },
-    {
-      course: "Software Engineering",
-      currentGrade: 85,
-      previousGrade: 87,
-      trend: "down",
-      assignments: { completed: 8, total: 10 },
-    },
-    {
-      course: "Project Management",
-      currentGrade: 92,
-      previousGrade: 90,
-      trend: "up",
-      assignments: { completed: 12, total: 14 },
-    },
-    {
-      course: "Advanced WEB Development",
-      currentGrade: 80,
-      previousGrade: 78,
-      trend: "up",
-      assignments: { completed: 6, total: 8 },
-    },
-  ];
+  ]);
+
+  useEffect(() => {
+    let mounted = true;
+    api.stats
+      .get()
+      .then((s) => {
+        if (!mounted || !s) return;
+        if (s.progress && Array.isArray(s.progress)) setProgressData(s.progress);
+      })
+      .catch(() => {});
+    return () => (mounted = false);
+  }, []);
 
   const overallAverage = Math.round(
-    progressData.reduce((sum, item) => sum + item.currentGrade, 0) / progressData.length
+    progressData.reduce((sum, item) => sum + (item.currentGrade || 0), 0) / Math.max(progressData.length, 1)
   );
 
   return (

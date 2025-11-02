@@ -27,3 +27,12 @@ export const MOTIVATIONAL_MESSAGES = [
   "You're unstoppable!",
   "Great progress today!",
 ] as const;
+
+const DEFAULTS = {
+  PRIORITY_COLORS,
+  GRADE_COLORS,
+  XP_VALUES,
+  MOTIVATIONAL_MESSAGES,
+};
+
+export default DEFAULTS;

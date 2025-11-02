@@ -1,60 +1,26 @@
 import { GraduationCap, BookOpen, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { api } from "../services/api";
 
 export default function Courses() {
-  const courses = [
-    {
-      id: 1,
-      name: "Advanced Data Bases",
-      code: "TABD",
-      instructor: "Dr. Ahmed Mansouri",
-      semester: "Fall 2024",
-      credits: 4,
-      grade: "A-",
-      color: "bg-blue-500/10 border-blue-500/30 text-blue-500",
-    },
-    {
-      id: 2,
-      name: "Software Engineering",
-      code: "SE 101",
-      instructor: "Prof. Fatima Benali",
-      semester: "Fall 2024",
-      credits: 4,
-      grade: "B+",
-      color: "bg-green-500/10 border-green-500/30 text-green-500",
-    },
-    {
-      id: 3,
-      name: "Project Management",
-      code: "CS 150",
-      instructor: "Dr. Karim Messaoudi",
-      semester: "Fall 2024",
-      credits: 3,
-      grade: "A",
-      color: "bg-purple-500/10 border-purple-500/30 text-purple-500",
-    },
-    {
-      id: 4,
-      name: "Advanced WEB Development",
-      code: "ENG 200",
-      instructor: "Ms. Amina Rahmouni",
-      semester: "Fall 2024",
-      credits: 3,
-      grade: "B",
-      color: "bg-orange-500/10 border-orange-500/30 text-orange-500",
-    },
-    {
-      id: 5,
-      name: "Development Of Concurrent Apps",
-      code: "HIST 120",
-      instructor: "Dr. Youcef Khelifa",
-      semester: "Fall 2024",
-      credits: 2,
-      grade: "A-",
-      color: "bg-red-500/10 border-red-500/30 text-red-500",
-    },
-  ];
+  const [courses, setCourses] = useState([]);
 
-  const totalCredits = courses.reduce((sum, course) => sum + course.credits, 0);
+  useEffect(() => {
+    let mounted = true;
+    api.courses
+      .getAll()
+      .then((res) => {
+        if (!mounted) return;
+        setCourses(Array.isArray(res) ? res : []);
+      })
+      .catch((e) => {
+        console.error("Failed to load courses", e);
+      })
+      .finally(() => mounted && null);
+    return () => (mounted = false);
+  }, []);
+
+  const totalCredits = courses.reduce((sum, course) => sum + (course.credits || 0), 0);
 
   return (
     <div className="space-y-6">
