@@ -1,7 +1,10 @@
 import { Home, CheckSquare, BookOpen, TrendingUp, Calendar, Settings, GraduationCap } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
-const menuItems = [
+import { useEffect, useState } from "react";
+import { api } from "../services/api";
+
+const DEFAULT_MENU = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Tasks", url: "/tasks", icon: CheckSquare },
   { title: "Courses", url: "/courses", icon: BookOpen },
@@ -11,6 +14,27 @@ const menuItems = [
 ];
 
 export function Sidebar({ isOpen, onToggle }) {
+  const [menuItems, setMenuItems] = useState(DEFAULT_MENU);
+
+  useEffect(() => {
+    let mounted = true;
+    api.config
+      .getAll()
+      .then((cfg) => {
+        if (!mounted || !cfg) return;
+        if (Array.isArray(cfg.menuItems) && cfg.menuItems.length) {
+          // Expect menuItems with { title, url }
+          const mapped = cfg.menuItems.map((m) => {
+            const found = DEFAULT_MENU.find((d) => d.url === m.url) || {};
+            return { title: m.title || found.title, url: m.url || found.url, icon: found.icon };
+          });
+          setMenuItems(mapped);
+        }
+      })
+      .catch(() => {});
+    return () => (mounted = false);
+  }, []);
+
   return (
     <>
       {/* Backdrop for mobile */}

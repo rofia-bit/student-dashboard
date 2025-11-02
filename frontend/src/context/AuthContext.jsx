@@ -42,13 +42,33 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     // credentials: { email, password }
     const res = await api.auth.login(credentials.email, credentials.password);
-    // Expect backend to return user object
+    // backend may return { user, token } or user object with token
     if (res) {
-      setUser(res);
-      setIsAuthenticated(true);
-      localStorage.setItem("user", JSON.stringify(res));
+      let userObj = null;
+      if (res.user) userObj = res.user;
+      else if (res.token && (res.id || res.email || res.name)) userObj = res; // in case token returned with user fields
+      else if (res.id || res.email) userObj = res;
+
+      if (res.token) {
+        try {
+          localStorage.setItem("token", res.token);
+        } catch (_) {
+          /* ignore localStorage errors */
+        }
+      }
+
+      if (userObj) {
+        setUser(userObj);
+        setIsAuthenticated(true);
+        try {
+          localStorage.setItem("user", JSON.stringify(userObj));
+        } catch (_) {
+          /* ignore localStorage errors */
+        }
+      }
+      return res;
     }
-    return res;
+    return null;
   };
 
   const logout = async () => {
@@ -59,7 +79,12 @@ export function AuthProvider({ children }) {
     }
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem("user");
+    try {
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+    } catch (_) {
+      /* ignore localStorage errors */
+    }
   };
 
   return (

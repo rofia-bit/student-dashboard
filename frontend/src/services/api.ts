@@ -6,6 +6,13 @@ type ReqOpts = { method?: string; body?: any; headers?: Record<string, string> }
 async function request(path: string, { method = "GET", body, headers = {} }: ReqOpts = {}) {
   const url = `${BASE}${path}`;
   const options: any = { method, headers: { "Content-Type": "application/json", ...headers } };
+  // attach token automatically from localStorage if present
+  try {
+    const token = localStorage.getItem("token");
+    if (token) options.headers.Authorization = `Bearer ${token}`;
+  } catch (e) {
+    // ignore localStorage errors
+  }
   if (body) options.body = JSON.stringify(body);
 
   const res = await fetch(url, options);
