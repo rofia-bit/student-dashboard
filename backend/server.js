@@ -61,9 +61,24 @@ const stats = {
   ]
 };
 
-// Simple token/user mock
-const MOCK_USER = { id: 1, name: 'Student', email: 'student@example.com' };
-const MOCK_TOKEN = 'mock-token-123';
+// Mock users and sessions store
+const USERS = [
+  { id: 1, name: 'Student', email: 'student@example.com', password: 'password123' },
+  { id: 2, name: 'Test User', email: 'test@example.com', password: 'test123' }
+];
+
+const sessions = {}; // token -> user
+
+// Helper to find user by credentials
+function findUser(email, password) {
+  return USERS.find(u => u.email === email && u.password === password);
+}
+
+// Remove password from user object before sending to client
+function sanitizeUser(user) {
+  const { password, ...safe } = user;
+  return safe;
+}
 
 // Routes
 app.get('/api/config', (req, res) => {
@@ -105,19 +120,37 @@ app.get('/api/stats', (req, res) => {
 });
 
 app.post('/api/auth/login', (req, res) => {
-  const { email } = req.body || {};
-  // Return a token and user for any login to keep the mock simple
-  res.json({ user: { ...MOCK_USER, email: email || MOCK_USER.email }, token: MOCK_TOKEN });
+  const { email, password } = req.body || {};
+  
+  const user = findUser(email, password);
+  if (!user) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  // Create session
+  const token = `session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const safeUser = sanitizeUser(user);
+  sessions[token] = safeUser;
+
+  // Return user (without password) and token
+  res.json({ user: safeUser, token });
 });
 
 app.post('/api/auth/logout', (req, res) => {
+  const auth = req.headers.authorization || '';
+  if (auth.startsWith('Bearer ')) {
+    const token = auth.replace('Bearer ', '').trim();
+    delete sessions[token]; // Remove session
+  }
   res.status(204).end();
 });
 
 app.get('/api/auth/me', (req, res) => {
   const auth = req.headers.authorization || '';
-  if (auth.startsWith('Bearer ') && auth.includes(MOCK_TOKEN)) {
-    return res.json(MOCK_USER);
+  if (auth.startsWith('Bearer ')) {
+    const token = auth.replace('Bearer ', '').trim();
+    const user = sessions[token];
+    if (user) return res.json(user);
   }
   return res.status(401).json({ error: 'Not authenticated' });
 });

@@ -42,7 +42,7 @@ export function AuthProvider({ children }) {
 
   const login = async (credentials) => {
     // credentials: { email, password }
-    const res = await api.auth.login(credentials.email, credentials.password);
+    const res = await api.auth.login(credentials);
     // backend may return { user, token } or user object with token
     if (res) {
       let userObj = null;

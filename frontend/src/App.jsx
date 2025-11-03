@@ -10,6 +10,7 @@ import Progress from "./pages/Progress";
 import CalendarPage from "./pages/CalendarPage";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
 import "./App.css";
 
 const App = () => (
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/progress" element={<MainLayout><Progress /></MainLayout>} />
           <Route path="/calendar" element={<MainLayout><CalendarPage /></MainLayout>} />
           <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
+          <Route path="/login" element={<Login />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

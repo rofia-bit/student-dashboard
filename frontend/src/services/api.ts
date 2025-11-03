@@ -32,7 +32,7 @@ async function request(path: string, { method = "GET", body, headers = {} }: Req
 
 export const api = {
   auth: {
-    login: async (email: string, password: string) => request(`/api/auth/login`, { method: "POST", body: { email, password } }),
+    login: async (credentials: { email: string, password: string }) => request(`/api/auth/login`, { method: "POST", body: credentials }),
     logout: async () => request(`/api/auth/logout`, { method: "POST" }),
     register: async (email: string, password: string, name: string) => request(`/api/auth/register`, { method: "POST", body: { email, password, name } }),
     me: async () => request(`/api/auth/me`),
