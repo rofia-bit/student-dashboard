@@ -2,19 +2,6 @@
 
 This mock backend is a tiny Express server that provides the API endpoints the frontend expects. It runs in-memory and is intended for local development and testing.
 
-Available endpoints
-
-- GET /api/config -> returns site configuration (menuItems, siteTitle, courseColors, currentSemester, motivationalMessages)
-- GET /api/tasks -> returns list of tasks
-- POST /api/tasks -> create a task (returns created task)
-- PUT /api/tasks/:id -> update a task
-- DELETE /api/tasks/:id -> delete a task (204)
-- GET /api/courses -> returns list of courses
-- GET /api/stats -> returns aggregated stats and progress
-- POST /api/auth/login -> accepts { email, password } and returns { user, token }
-- POST /api/auth/logout -> returns 204
-- GET /api/auth/me -> returns current user when Authorization: Bearer <token> header is present
-
 Run locally
 
 1. From `backend/` install dependencies:
