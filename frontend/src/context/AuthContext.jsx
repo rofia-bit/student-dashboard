@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { createContext, useContext, useState, useEffect } from "react";
 import { api } from "../services/api";
+import { addXP } from "../lib/gamify";
 
 const AuthContext = createContext(undefined);
 
@@ -64,6 +65,17 @@ export function AuthProvider({ children }) {
           localStorage.setItem("user", JSON.stringify(userObj));
         } catch (_) {
           /* ignore localStorage errors */
+        }
+        try {
+          // small welcome XP and a greeting event for UI
+          addXP(10, 'login-bonus');
+        } catch {
+          /* ignore */
+        }
+        try {
+          window.dispatchEvent(new CustomEvent('loginGreeting', { detail: { user: userObj } }));
+        } catch {
+          /* ignore */
         }
       }
       return res;

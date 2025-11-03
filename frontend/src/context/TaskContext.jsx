@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { api } from "../services/api";
+import { addXP } from "../lib/gamify";
 
 const TaskContext = createContext(undefined);
 
@@ -57,9 +58,24 @@ export function TaskProvider({ children }) {
     try {
       await api.tasks.update(id, updated);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      // award XP when marking a task complete
+      if (!target.completed && updated.completed) {
+        try {
+          addXP(20, 'task-complete');
+        } catch {
+            /* ignore */
+          }
+      }
     } catch (err) {
       console.error("Toggle task failed", err);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      if (!target.completed && updated.completed) {
+        try {
+          addXP(20, 'task-complete');
+        } catch {
+          /* ignore */
+        }
+      }
     }
   };
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search, Plus, Trash2, Check } from "lucide-react";
 import { useTasks } from "../context/TaskContext";
+import Pomodoro from "../components/Pomodoro";
 
 export default function Tasks() {
   const { tasks, addTask, deleteTask, toggleComplete } = useTasks();
@@ -36,13 +37,16 @@ export default function Tasks() {
           <h2 className="text-3xl font-bold text-foreground">Tasks</h2>
           <p className="text-muted-foreground mt-1">Manage your assignments and deadlines</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Add Task
-        </button>
+        <div className="flex items-center gap-3">
+          <Pomodoro />
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add Task
+          </button>
+        </div>
       </div>
 
       {showForm && (
